@@ -10,11 +10,11 @@ NOTA SOBRE LOS DATOS: el CSV público de PRONABEC ("Nota Promedio del
 Postulante Beca 18") solo trae el Promedio académico del postulante y datos
 de la institución/colegio; NO incluye Ingreso_Familiar ni Estado_Beca
 (si el becario retuvo o perdió la beca), porque esa información es
-confidencial. Por eso, igual que en tu notebook de Colab, se inyectan
-(data mocking) las columnas:
+confidencial. Por eso se inyectan (data mocking) las columnas:
   - Ingreso_Familiar: uniforme entre 930 y 6000 soles.
   - Estado_Beca: variable objetivo simulada (0=Alto riesgo, 1=Retiene),
-    con probabilidad 75% de retención (supuesto documentado, ajustable).
+    con probabilidades condicionadas al Promedio y al Ingreso_Familiar
+    para generar resultados realistas y correlacionados.
 
 Se usa un Pipeline de scikit-learn (StandardScaler + DecisionTreeClassifier)
 para que el escalado quede empaquetado junto con el modelo y no haya que
@@ -60,7 +60,17 @@ df["Promedio"] = df["Promedio"].clip(lower=11.0, upper=20.0)
 # -----------------------------------------------------------------
 num_filas = len(df)
 df["Ingreso_Familiar"] = np.random.uniform(930, 6000, num_filas)
-df["Estado_Beca"] = np.random.choice([0, 1], num_filas, p=[0.25, 0.75])
+
+# Simulación realista condicionada
+prob_retencion = np.full(num_filas, 0.85) # Base 85% de retención
+prob_retencion = np.where(df["Promedio"] < 13.0, prob_retencion - 0.50, prob_retencion)
+prob_retencion = np.where(df["Promedio"] >= 16.0, prob_retencion + 0.10, prob_retencion)
+prob_retencion = np.where(df["Ingreso_Familiar"] < 1500, prob_retencion - 0.25, prob_retencion)
+prob_retencion = np.clip(prob_retencion, 0.05, 0.98) # Limitar entre 5% y 98%
+
+# Asignar 0 o 1 basado en la probabilidad individual
+random_vals = np.random.rand(num_filas)
+df["Estado_Beca"] = (random_vals < prob_retencion).astype(int)
 
 FEATURES = ["Promedio", "Ingreso_Familiar"]
 TARGET = "Estado_Beca"

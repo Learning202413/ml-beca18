@@ -33,6 +33,10 @@ MODEL_PATH = Path(__file__).resolve().parent / "models" / "modelo_entrenado.pkl"
 # -----------------------------------------------------------------
 @st.cache_resource
 def cargar_modelo():
+    import subprocess
+    # Forzar el reentrenamiento en la nube porque el código de simulación cambió
+    print("Reentrenando modelo con nueva lógica realista...")
+    subprocess.run(["python", "entrenar_modelo.py"], check=True)
     return joblib.load(MODEL_PATH)
 
 
