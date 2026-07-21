@@ -87,9 +87,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 #    cada uno como Pipeline (StandardScaler + modelo)
 # -----------------------------------------------------------------
 modelos = {
-    "K-Vecinos Cercanos (KNN)": KNeighborsClassifier(n_neighbors=5),
     "Árbol de Decisión (CART)": DecisionTreeClassifier(random_state=RANDOM_STATE, max_depth=5),
-    "Random Forest": RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=100),
 }
 
 resultados = []
