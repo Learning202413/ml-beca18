@@ -61,14 +61,20 @@ df["Promedio"] = df["Promedio"].clip(lower=11.0, upper=20.0)
 num_filas = len(df)
 df["Ingreso_Familiar"] = np.random.uniform(930, 6000, num_filas)
 
-# Simulación realista condicionada
-prob_retencion = np.full(num_filas, 0.85) # Base 85% de retención
-prob_retencion = np.where(df["Promedio"] < 13.0, prob_retencion - 0.50, prob_retencion)
-prob_retencion = np.where(df["Promedio"] >= 16.0, prob_retencion + 0.10, prob_retencion)
-prob_retencion = np.where(df["Ingreso_Familiar"] < 1500, prob_retencion - 0.25, prob_retencion)
-prob_retencion = np.clip(prob_retencion, 0.05, 0.98) # Limitar entre 5% y 98%
+# Simulación realista condicionada (fuerte correlación lineal)
+# Promedio va de 11 a 20. 
+# Retención base: 11 -> ~10%, 15 -> ~50%, 20 -> ~100%
+prob_retencion = (df["Promedio"] - 10.0) / 10.0 
 
-# Asignar 0 o 1 basado en la probabilidad individual
+# Ajuste por ingreso familiar (930 a 6000)
+# A mayor ingreso, ligeramente mayor retención (hasta +20% extra)
+ajuste_ingreso = (df["Ingreso_Familiar"] - 930) / (6000 - 930) * 0.20
+prob_retencion = prob_retencion + ajuste_ingreso
+
+# Limitar probabilidades al rango estricto [0.01, 0.99]
+prob_retencion = np.clip(prob_retencion, 0.01, 0.99)
+
+# Asignar 0 (Riesgo) o 1 (Estable) basado en la probabilidad individual
 random_vals = np.random.rand(num_filas)
 df["Estado_Beca"] = (random_vals < prob_retencion).astype(int)
 
