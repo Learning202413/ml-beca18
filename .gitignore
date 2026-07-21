@@ -1,0 +1,19 @@
+# Secretos - NUNCA subir credenciales reales
+.streamlit/secrets.toml
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Datasets pesados (opcional: descomenta si no quieres versionarlo en git)
+# Beca18.csv
+
+# Sistema
+.DS_Store
+.ipynb_checkpoints/
